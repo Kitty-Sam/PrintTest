@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { printToFileAsync } from 'expo-print';
 import { shareAsync } from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
-import * as Asset from 'expo-asset';
+import { manipulateAsync } from 'expo-image-manipulator';
+import { Asset } from 'expo-asset';
 
 //expo install expo-print
 //expo install expo-sharing
@@ -15,22 +16,19 @@ export default function App() {
   const [name, setName] = useState('');
 
   const generatePdf = async () => {
-    // const imageAsset = Asset.fromModule(require('./assets/splash.png'));
-    //
-    // console.log('imageAsset', imageAsset);
-    //
-    // await imageAsset.downloadAsync();
-    // const imageUri = imageAsset.localUri;
-    //
-    // const base64Image = await FileSystem.readAsStringAsync(imageUri, {
-    //   encoding: FileSystem.EncodingType.Base64,
-    // });
+    //choice img from assets files
+
+    const imageAsset = Asset.fromModule(require('./assets/movie.jpeg'));
+    const image = await manipulateAsync(imageAsset.localUri ?? imageAsset.uri, [], { base64: true });
 
     const html = `
     <html>      
          <body> 
             <h1>Hi ${name}</h1> 
-             <img src="data:image/png;base64,${base64Image}" alt="logo" style="width: 50px; height: 50px"/> 
+             <img
+        src="data:image/jpeg;base64,${image.base64}"
+        style="width: 90vw;" />
+      
             <p style="color: red; font-size: 16px">Hello.</p>        
             <p style="color: red; font-size: 16px">Bonjour</p>        
             <p style="color: red; font-size: 16px">Hola</p>        
@@ -42,6 +40,8 @@ export default function App() {
       html: html,
       base64: false,
     });
+
+    //change file name
     const fileName = 'example.pdf';
 
     await FileSystem.moveAsync({
@@ -52,7 +52,7 @@ export default function App() {
     await shareAsync(FileSystem.documentDirectory + fileName, {
       mimeType: 'application/pdf',
       dialogTitle: 'Share PDF',
-      UTI: 'com.adobe.pdf',
+      UTI: '.pdf',
     });
   };
 
